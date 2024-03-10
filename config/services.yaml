@@ -1,0 +1,40 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    app.france_travail.offer_api.authentication_uri: 'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire'
+    app.france_travail.offer_api.base_uri: 'https://api.pole-emploi.io/partenaire/offresdemploi/v2/offres'
+    app.france_travail.offer_api.client_id: '%env(FT_OFFER_API_CLIENT_ID)%'
+    app.france_travail.offer_api.client_secret: '%env(FT_OFFER_API_CLIENT_SECRET)%'
+    app.france_travail.offer_api.scope: 'o2dsoffre api_offresdemploiv2'
+    
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+        
+    App\Service\FranceTravail\OffresEmploiApi\AuthenticationManager:
+        arguments:
+            $authenticationUri: '%app.france_travail.offer_api.authentication_uri%'
+            $clientId: '%app.france_travail.offer_api.client_id%'
+            $clientSecret: '%app.france_travail.offer_api.client_secret%'
+            $scope: '%app.france_travail.offer_api.scope%'
+
+    App\Service\FranceTravail\OffresEmploiApi\Client:
+        arguments:
+            $baseUri: '%app.france_travail.offer_api.base_uri%'
